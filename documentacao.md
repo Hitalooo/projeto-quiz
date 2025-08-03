@@ -51,4 +51,3 @@ projeto-quiz/
 - **Etapa 3:** Integrar a API com o banco de dados.
 - **Etapa 4:** Realizar testes e ajustes necessários.
 - **Etapa 5:** Realizar o deploy da aplicação e entrega final.
-

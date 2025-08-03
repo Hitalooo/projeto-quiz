@@ -1,5 +1,9 @@
-from models import questions_multiple_choice, questions_true_false
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Dict, List
+from models import questions_multiple_choice, questions_true_false, RespostaRequest, RevisaoRequest
 
+app = FastAPI()
 revisoes = []
 
 def listar_questoes(tipo: str):
@@ -33,9 +37,32 @@ def corrigir_quiz(tipo: str, respostas_usuario: dict):
 
     return {"score": score, "total": len(perguntas), "feedback": feedback}
 
-def solicitar_revisao(question_id: str, motivo: str):
+@app.get("/quizzes/{tipo}/perguntas")
+def api_listar_questoes(tipo: str):
+    perguntas = listar_questoes(tipo)
+    if not perguntas:
+        raise HTTPException(status_code=404, detail="Tipo de quiz não encontrado")
+    resultado = []
+    for q in perguntas:
+        resultado.append({
+            "id": q.id,
+            "text": q.text,
+            "options": q.options
+        })
+    return resultado
+
+@app.post("/quizzes/{tipo}/corrigir")
+def api_corrigir_quiz(tipo: str, respostas: RespostaRequest):
+    perguntas = listar_questoes(tipo)
+    if not perguntas:
+        raise HTTPException(status_code=404, detail="Tipo de quiz não encontrado")
+    resultado = corrigir_quiz(tipo, respostas.answers)
+    return resultado
+
+@app.post("/quizzes/revisoes")
+def api_solicitar_revisao(dados: RevisaoRequest):
     revisoes.append({
-        "question_id": question_id,
-        "motivo": motivo
+        "question_id": dados.question_id,
+        "motivo": dados.motivo
     })
-    return "Revisão solicitada com sucesso!"
+    return {"message": "Revisão solicitada com sucesso!"}
